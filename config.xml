@@ -8,6 +8,7 @@
 	<icon src="www/icon-128.png" width="128" height="128" density="xhdpi" />
 
 	<preference name="android-targetSdkVersion" value="34" />
+
 	<preference name="orientation" value="default" />
 	<preference name="fullscreen" value="true" />
 	<preference name="DisallowOverscroll" value="true" />
@@ -16,18 +17,17 @@
 	<config-file parent="UIStatusBarHidden" platform="ios" target="*-Info.plist"><true/></config-file>
 	<config-file parent="UIViewControllerBasedStatusBarAppearance" platform="ios" target="*-Info.plist"><false/></config-file>
 
+
 	<preference name="deployment-target" value="10.0" />
 	<preference name="android-minSdkVersion" value="21" />
 	<access origin="*" />
-
-	<!-- Добавьте разрешение для URL через интенты -->
-	<allow-intent href="*" />
 
 	<plugin name="cordova-custom-config" />
 	<plugin name="cordova-plugin-file" />
 	<plugin name="cordova-plugin-inappbrowser" />
 	<plugin name="cordova-plugin-statusbar" />
 	<plugin name="cordova-plugin-wkwebview-engine" />
+
 
 	<engine name="ios" />
 	<engine name="android" />

@@ -25,12 +25,11 @@
 		{ "id": "cordova-plugin-file", "version": null },
 		{ "id": "cordova-plugin-inappbrowser", "version": null },
 		{ "id": "cordova-plugin-statusbar", "version": null },
-		{ "id": "cordova-plugin-whitelist", "version": null },
 		{ "id": "cordova-plugin-wkwebview-engine", "version": null }
 	],
 	"android": {
 		"min": 21,
-		"target": 30,
+		"target": 34,
 		"plugins": []
 	},
 	"ios": {

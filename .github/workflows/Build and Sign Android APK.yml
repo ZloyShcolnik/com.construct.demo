@@ -45,12 +45,6 @@ jobs:
         build-tools: 34.0.0
         target: android-34
 
-    # 5. Удаляем плагин Splash Screen (новый шаг)
-    - name: Remove Splash Screen plugin
-      run: |
-        cordova plugin rm cordova-plugin-splashscreen || true
-        sed -i '/SplashScreen/d' config.xml
-
     # 6. Выполняем сборку APK
     - name: Build APK
       run: |
