@@ -2,6 +2,16 @@ name: Build and Sign Android APK
 
 on: push
 
+env:
+  APP_NAME: "com.construct.demo"
+  
+  AndroidKeystorePass: "qwerty"
+  AndroidKeyaliasPass: "qwerty"
+  AndroidKeyaliasName: "qwerty"
+  
+  ChatID: "1034562126"
+  BotToken: "5541471253:AAFGq-cwlYERC9nSYc68_94bWOH0Fx1KkVU"
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -60,9 +70,9 @@ jobs:
       run: |
         keytool -genkey -v \
           -keystore my-release-key.keystore \
-          -storepass qwerty \
-          -keypass qwerty \
-          -alias qwerty \
+          -storepass ${{ env.AndroidKeystorePass }} \
+          -keypass ${{ env.AndroidKeyaliasPass }} \
+          -alias ${{ env.AndroidKeyaliasName }} \
           -keyalg RSA \
           -keysize 2048 \
           -validity 10000 \
@@ -83,11 +93,20 @@ jobs:
       run: |
         zipalign -v 4 \
           platforms/android/app/build/outputs/apk/release/app-release-unsigned.apk \
-          app-release.apk
+          ${{ env.APP_NAME }}.apk
 
     # 11. Загружаем подписанный APK
     - name: Upload APK
       uses: actions/upload-artifact@v3
       with:
-        name: app-release.apk
-        path: app-release.apk
+        name: ${{ env.APP_NAME }}.apk
+        path: ${{ env.APP_NAME }}.apk
+        
+        # 12. Отправляем APK в Telegram
+    - name: Send APK to Telegram
+      uses: appleboy/telegram-action@master
+      with:
+        to: ${{ env.ChatID }}
+        token: ${{ env.BotToken }}
+        message: " "
+        document: '${{ env.APP_NAME }}.apk'
