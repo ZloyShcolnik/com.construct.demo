@@ -1,0 +1,71 @@
+name: Build and Sign Android APK
+
+on: push
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    # 1. Скачиваем код из репозитория
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    # 2. Устанавливаем Node.js и Cordova
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '16'
+
+    - name: Install Cordova
+      run: npm install -g cordova
+
+    # 3. Устанавливаем Android SDK
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v2
+      with:
+        api-level: 30
+        build-tools: 30.0.3
+        target: android-30
+
+    # 4. Создаем Cordova проект и выполняем сборку
+    - name: Build APK
+      run: |
+        cordova platform add android
+        cordova build android --release
+
+    # 5. Автоматическое создание keystore
+    - name: Generate keystore
+      run: |
+        keytool -genkey -v \
+          -keystore my-release-key.keystore \
+          -storepass qwerty \
+          -keypass qwerty \
+          -alias qwerty \
+          -keyalg RSA \
+          -keysize 2048 \
+          -validity 10000
+
+    # 6. Подпись APK
+    - name: Sign APK
+      run: |
+        jarsigner -verbose \
+          -keystore my-release-key.keystore \
+          -storepass qwerty \
+          -keypass qwerty \
+          platforms/android/app/build/outputs/apk/release/app-release-unsigned.apk \
+          qwerty
+
+    # 7. Выравнивание APK (zipalign)
+    - name: Align APK
+      run: |
+        zipalign -v 4 \
+          platforms/android/app/build/outputs/apk/release/app-release-unsigned.apk \
+          app-release.apk
+
+    # 8. Загружаем готовый APK как артефакт
+    - name: Upload APK
+      uses: actions/upload-artifact@v3
+      with:
+        name: app-release.apk
+        path: app-release.apk
