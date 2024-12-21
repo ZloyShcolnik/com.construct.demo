@@ -2,20 +2,24 @@ name: Build and Sign Android APK
 
 on: push
 
+
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
+    # 1. Скачиваем код из репозитория
     - name: Checkout repository
       uses: actions/checkout@v3
 
+    # 2. Устанавливаем Java 17
     - name: Setup JDK 17
       uses: actions/setup-java@v3
       with:
-        distribution: 'temurin'
+        distribution: 'temurin' # Либо 'zulu', если вы предпочитаете Zulu JDK
         java-version: '17'
 
+    # 3. Устанавливаем Node.js и Cordova
     - name: Setup Node.js
       uses: actions/setup-node@v3
       with:
@@ -24,24 +28,21 @@ jobs:
     - name: Install Cordova
       run: npm install -g cordova
 
+    # 4. Устанавливаем Android SDK
     - name: Setup Android SDK
       uses: android-actions/setup-android@v2
       with:
-        api-level: 34
-        build-tools: 34.0.0
-        target: android-34
+        api-level: 30
+        build-tools: 30.0.3
+        target: android-30
 
-    # Шаг: Обновление compileSdkVersion и targetSdkVersion
-    - name: Update compileSdkVersion and targetSdkVersion
-      run: |
-        sed -i 's/compileSdkVersion [0-9]\+/compileSdkVersion 34/' platforms/android/app/build.gradle
-        sed -i 's/targetSdkVersion [0-9]\+/targetSdkVersion 34/' platforms/android/app/build.gradle
-
+    # 5. Создаем Cordova проект и выполняем сборку
     - name: Build APK
       run: |
         cordova platform add android
         cordova build android --release
 
+    # 6. Автоматическое создание keystore
     - name: Generate keystore
       run: |
         keytool -genkey -v \
@@ -53,6 +54,7 @@ jobs:
           -keysize 2048 \
           -validity 10000
 
+    # 7. Подпись APK
     - name: Sign APK
       run: |
         jarsigner -verbose \
@@ -62,12 +64,14 @@ jobs:
           platforms/android/app/build/outputs/apk/release/app-release-unsigned.apk \
           qwerty
 
+    # 8. Выравнивание APK (zipalign)
     - name: Align APK
       run: |
         zipalign -v 4 \
           platforms/android/app/build/outputs/apk/release/app-release-unsigned.apk \
           app-release.apk
 
+    # 9. Загружаем готовый APK как артефакт
     - name: Upload APK
       uses: actions/upload-artifact@v3
       with:

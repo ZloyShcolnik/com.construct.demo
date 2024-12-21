@@ -29,7 +29,7 @@
 	],
 	"android": {
 		"min": 21,
-		"target": 30,
+		"target": 34,
 		"plugins": []
 	},
 	"ios": {
