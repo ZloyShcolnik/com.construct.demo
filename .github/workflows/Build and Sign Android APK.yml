@@ -39,10 +39,6 @@ jobs:
     - name: Build APK
       run: |
         cordova platform add android
-        cd platforms/android
-        sed -i 's/compileSdkVersion 30/compileSdkVersion 34/' build.gradle
-        sed -i 's/targetSdkVersion 30/targetSdkVersion 34/' build.gradle
-        cd ../..
         cordova build android --release
 
     # 6. Автоматическое создание keystore
