@@ -51,7 +51,8 @@ jobs:
           -alias qwerty \
           -keyalg RSA \
           -keysize 2048 \
-          -validity 10000
+          -validity 10000 \
+          -dname "CN=John Doe, OU=Development, O=My Company, L=New York, ST=New York, C=US"
 
     # 7. Подпись APK
     - name: Sign APK
