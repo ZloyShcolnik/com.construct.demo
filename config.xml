@@ -12,11 +12,6 @@
     <preference name="fullscreen" value="true" />
     <preference name="DisallowOverscroll" value="true" />
     <preference name="AllowInlineMediaPlayback" value="true" />
-    
-    <!-- Настройки для SplashScreen -->
-    <preference name="SplashScreen" value="screen" />
-    <preference name="SplashScreenDelay" value="1000" />
-    <preference name="AutoHideSplashScreen" value="true" />
 
     <!-- Конфигурации для iOS -->
     <config-file parent="UIStatusBarHidden" platform="ios" target="*-Info.plist"><true/></config-file>
@@ -32,15 +27,6 @@
     <plugin name="cordova-plugin-inappbrowser" />
     <plugin name="cordova-plugin-statusbar" />
     <plugin name="cordova-plugin-wkwebview-engine" />
-
-    <!-- Платформа для Android -->
-    <platform name="android">
-        <!-- Убираем заставку через установку совместимой темы активности -->
-        <custom-preference name="android-manifest/application/activity/@android:theme" value="@style/Theme.AppCompat.Light.NoActionBar" />
-
-        <!-- Изменяем настройки активности для управления окнами ввода -->
-        <custom-preference name="android-manifest/application/activity/@android:windowSoftInputMode" value="adjustResize" />
-    </platform>
 
     <engine name="ios" />
     <engine name="android" />
