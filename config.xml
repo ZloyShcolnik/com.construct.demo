@@ -36,13 +36,8 @@
 
     <!-- Платформа для Android -->
     <platform name="android">
-        <!-- Изменяем тему активности, чтобы убрать заставку -->
+        <!-- Удаляем заставку, заменяя тему активности на None -->
         <custom-preference name="android-manifest/application/activity[@android:name='com.construct.demo.MainActivity']/@android:theme" value="@android:style/Theme.NoDisplay" />
-
-        <!-- Дополнительные настройки для заставки -->
-        <custom-preference name="SplashScreen" value="none" />
-        <custom-preference name="SplashScreenDelay" value="0" />
-        <custom-preference name="AutoHideSplashScreen" value="true" />
 
         <!-- Убираем заставку через предпочтения -->
         <custom-preference name="android-manifest/application/activity[@android:name='com.construct.demo.MainActivity']/@android:windowSoftInputMode" value="adjustResize" />
