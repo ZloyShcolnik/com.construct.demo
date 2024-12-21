@@ -21,7 +21,7 @@
 	<access origin="*" />
 
 	<!-- Добавьте разрешение для URL через интенты -->
-	<allow-intent href="https://example.com/*" />
+	<allow-intent href="*" />
 
 	<plugin name="cordova-custom-config" />
 	<plugin name="cordova-plugin-file" />
