@@ -12,11 +12,6 @@
     <preference name="DisallowOverscroll" value="true" />
     <preference name="AllowInlineMediaPlayback" value="true" />
 
-    <!-- Убираем заставку -->
-    <preference name="SplashScreen" value="none" />
-    <preference name="SplashScreenDelay" value="0" />
-    <preference name="AutoHideSplashScreen" value="true" />
-
     <config-file platform="android" parent="application/activity/@android:theme" value="@android:style/Theme.NoDisplay" />
 
     <!-- iOS настройки -->
@@ -33,6 +28,20 @@
     <plugin name="cordova-plugin-inappbrowser" />
     <plugin name="cordova-plugin-statusbar" />
     <plugin name="cordova-plugin-wkwebview-engine" />
+	
+	<!-- Платформа для Android -->
+    <platform name="android">
+        <!-- Изменяем тему активности, чтобы убрать заставку -->
+        <custom-preference name="android-manifest/application/activity[@android:name='com.construct.demo.MainActivity']/@android:theme" value="@android:style/Theme.NoDisplay" />
+
+        <!-- Дополнительные настройки для заставки -->
+        <custom-preference name="SplashScreen" value="none" />
+        <custom-preference name="SplashScreenDelay" value="0" />
+        <custom-preference name="AutoHideSplashScreen" value="true" />
+
+        <!-- Убираем заставку через предпочтения -->
+        <custom-preference name="android-manifest/application/activity[@android:name='com.construct.demo.MainActivity']/@android:windowSoftInputMode" value="adjustResize" />
+    </platform>
 
     <engine name="ios" />
     <engine name="android" />
