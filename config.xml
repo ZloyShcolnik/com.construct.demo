@@ -1,4 +1,5 @@
-﻿<widget id="com.construct.demo" version="1.0.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<widget id="com.construct.demo" version="1.0.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
     <name>com.construct.demo</name>
     <description>demo</description>
     <author></author>
@@ -7,14 +8,18 @@
     <icon src="www/icon-128.png" width="128" height="128" density="xhdpi" />
 
     <preference name="android-targetSdkVersion" value="34" />
+
     <preference name="orientation" value="default" />
     <preference name="fullscreen" value="true" />
     <preference name="DisallowOverscroll" value="true" />
     <preference name="AllowInlineMediaPlayback" value="true" />
+    
+    <!-- Настройки для SplashScreen -->
+    <preference name="SplashScreen" value="none" />
+    <preference name="SplashScreenDelay" value="0" />
+    <preference name="AutoHideSplashScreen" value="true" />
 
-    <config-file platform="android" parent="application/activity/@android:theme" value="@android:style/Theme.NoDisplay" />
-
-    <!-- iOS настройки -->
+    <!-- Конфигурации для iOS -->
     <config-file parent="UIStatusBarHidden" platform="ios" target="*-Info.plist"><true/></config-file>
     <config-file parent="UIViewControllerBasedStatusBarAppearance" platform="ios" target="*-Info.plist"><false/></config-file>
 
@@ -22,14 +27,14 @@
     <preference name="android-minSdkVersion" value="21" />
     <access origin="*" />
 
-    <!-- Плагины -->
+    <!-- Добавляем плагин для управления конфигурацией -->
     <plugin name="cordova-custom-config" />
     <plugin name="cordova-plugin-file" />
     <plugin name="cordova-plugin-inappbrowser" />
     <plugin name="cordova-plugin-statusbar" />
     <plugin name="cordova-plugin-wkwebview-engine" />
-	
-	<!-- Платформа для Android -->
+
+    <!-- Платформа для Android -->
     <platform name="android">
         <!-- Изменяем тему активности, чтобы убрать заставку -->
         <custom-preference name="android-manifest/application/activity[@android:name='com.construct.demo.MainActivity']/@android:theme" value="@android:style/Theme.NoDisplay" />
