@@ -36,7 +36,7 @@
     <!-- Платформа для Android -->
     <platform name="android">
         <!-- Убираем заставку через установку совместимой темы активности -->
-        <custom-preference name="android-manifest/application/activity/@android:theme" value="@android:style/Theme.Material" />
+        <custom-preference name="android-manifest/application/activity/@android:theme" value="@style/Theme.AppCompat.Light.NoActionBar" />
 
         <!-- Изменяем настройки активности для управления окнами ввода -->
         <custom-preference name="android-manifest/application/activity/@android:windowSoftInputMode" value="adjustResize" />
