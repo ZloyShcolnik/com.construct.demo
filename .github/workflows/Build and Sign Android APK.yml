@@ -35,11 +35,21 @@ jobs:
         build-tools: 34.0.0
         target: android-34
 
-    # 5. Создаем Cordova проект и выполняем сборку
+    # 5. Создаем Cordova проект и выполняем сборку APK
     - name: Build APK
       run: |
         cordova platform add android
-        cordova build android --release
+        cordova build android --release -- --packageType=apk
+
+    # Проверяем существование файла APK
+    - name: Check APK exists
+      run: |
+        if [ -f platforms/android/app/build/outputs/apk/release/app-release-unsigned.apk ]; then
+          echo "APK найден, продолжаем подписывать."
+        else
+          echo "APK не найден, проверьте процесс сборки."
+          exit 1
+        fi
 
     # 6. Автоматическое создание keystore
     - name: Generate keystore
@@ -51,8 +61,7 @@ jobs:
           -alias qwerty \
           -keyalg RSA \
           -keysize 2048 \
-          -validity 10000 \
-          -dname "CN=John Doe, OU=Development, O=My Company, L=New York, ST=New York, C=US"
+          -validity 10000
 
     # 7. Подпись APK
     - name: Sign APK
