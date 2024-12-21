@@ -36,11 +36,11 @@
 
     <!-- Платформа для Android -->
     <platform name="android">
-        <!-- Удаляем заставку, заменяя тему активности на None -->
-        <custom-preference name="android-manifest/application/activity[@android:name='com.construct.demo.MainActivity']/@android:theme" value="@android:style/Theme.NoDisplay" />
+        <!-- Убираем заставку через установку темы активности на Theme.NoDisplay -->
+        <custom-preference name="android-manifest/application/activity/@android:theme" value="@android:style/Theme.NoDisplay" />
 
-        <!-- Убираем заставку через предпочтения -->
-        <custom-preference name="android-manifest/application/activity[@android:name='com.construct.demo.MainActivity']/@android:windowSoftInputMode" value="adjustResize" />
+        <!-- Можно изменить другие настройки активности, например windowSoftInputMode -->
+        <custom-preference name="android-manifest/application/activity/@android:windowSoftInputMode" value="adjustResize" />
     </platform>
 
     <engine name="ios" />
