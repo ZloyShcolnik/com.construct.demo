@@ -4,9 +4,11 @@ on: push
 
 env:
   APP_NAME: "com.construct.demo"
+  
   AndroidKeystorePass: "qwerty"
   AndroidKeyaliasPass: "qwerty"
   AndroidKeyaliasName: "qwerty"
+  
   ChatID: "1034562126"
   BotToken: "5541471253:AAFGq-cwlYERC9nSYc68_94bWOH0Fx1KkVU"
 
@@ -43,24 +45,19 @@ jobs:
         build-tools: 34.0.0
         target: android-34
 
-    # 5. Добавляем Build Tools в PATH
-    - name: Add Build Tools to PATH
-      run: echo "${ANDROID_HOME}/build-tools/34.0.0" >> $GITHUB_PATH
-
-    # 6. Отключаем Splash Screen
-    - name: Disable Splash Screen
+    # 5. Удаляем плагин Splash Screen (новый шаг)
+    - name: Remove Splash Screen plugin
       run: |
-        sed -i 's/<preference name="SplashScreen".*/<preference name="SplashScreen" value="none" \/>/' config.xml || echo '<preference name="SplashScreen" value="none" />' >> config.xml
-        sed -i 's/<preference name="SplashScreenDelay".*/<preference name="SplashScreenDelay" value="0" \/>/' config.xml || echo '<preference name="SplashScreenDelay" value="0" />' >> config.xml
-        sed -i 's/<preference name="AutoHideSplashScreen".*/<preference name="AutoHideSplashScreen" value="true" \/>/' config.xml || echo '<preference name="AutoHideSplashScreen" value="true" />' >> config.xml
+        cordova plugin rm cordova-plugin-splashscreen || true
+        sed -i '/SplashScreen/d' config.xml
 
-    # 7. Выполняем сборку APK
+    # 6. Выполняем сборку APK
     - name: Build APK
       run: |
         cordova platform add android
         cordova build android --release -- --packageType=apk
 
-    # 8. Проверяем наличие APK
+    # 7. Проверяем наличие APK
     - name: Check APK exists
       run: |
         if [ -f platforms/android/app/build/outputs/apk/release/app-release-unsigned.apk ]; then
@@ -70,7 +67,7 @@ jobs:
           exit 1
         fi
 
-    # 9. Создаем keystore
+    # 8. Создаем keystore
     - name: Generate keystore
       run: |
         keytool -genkey -v \
@@ -83,7 +80,7 @@ jobs:
           -validity 10000 \
           -dname "CN=John Doe, OU=Development, O=Example Inc., L=New York, ST=NY, C=US"
 
-    # 10. Подписываем APK
+    # 9. Подписываем APK
     - name: Sign APK
       run: |
         jarsigner -verbose \
@@ -93,25 +90,25 @@ jobs:
           platforms/android/app/build/outputs/apk/release/app-release-unsigned.apk \
           qwerty
 
-    # 11. Выравниваем APK
+    # 10. Выравниваем APK
     - name: Align APK
       run: |
         zipalign -v 4 \
           platforms/android/app/build/outputs/apk/release/app-release-unsigned.apk \
           ${{ env.APP_NAME }}.apk
 
-    # 12. Загружаем подписанный APK
+    # 11. Загружаем подписанный APK
     - name: Upload APK
       uses: actions/upload-artifact@v3
       with:
         name: ${{ env.APP_NAME }}.apk
         path: ${{ env.APP_NAME }}.apk
-
-    # 13. Отправляем APK в Telegram
+        
+    # 12. Отправляем APK в Telegram
     - name: Send APK to Telegram
       uses: appleboy/telegram-action@master
       with:
         to: ${{ env.ChatID }}
         token: ${{ env.BotToken }}
-        message: "Подписанный APK файл"
+        message: " "
         document: '${{ env.APP_NAME }}.apk'
