@@ -13,6 +13,10 @@
 	<preference name="fullscreen" value="true" />
 	<preference name="DisallowOverscroll" value="true" />
 	<preference name="AllowInlineMediaPlayback" value="true" />
+	
+	<preference name="SplashScreen" value="none" />
+    <preference name="SplashScreenDelay" value="0" />
+    <preference name="AutoHideSplashScreen" value="true" />
 
 	<config-file parent="UIStatusBarHidden" platform="ios" target="*-Info.plist"><true/></config-file>
 	<config-file parent="UIViewControllerBasedStatusBarAppearance" platform="ios" target="*-Info.plist"><false/></config-file>
