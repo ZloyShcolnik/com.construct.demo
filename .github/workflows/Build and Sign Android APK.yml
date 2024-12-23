@@ -86,13 +86,20 @@ jobs:
           ${{ env.APP_NAME }}.apk
           ${{ env.APP_NAME }}.aab
 
-    # 11. Отправляем APK и AAB в Telegram
+    # 11. Отправляем APK Telegram
     - name: Send APK and AAB to Telegram
       uses: appleboy/telegram-action@master
       with:
         to: ${{ env.ChatID }}
         token: ${{ env.BotToken }}
         message: " "
-        document: |
-          ${{ env.APP_NAME }}.apk
-          ${{ env.APP_NAME }}.aab
+        document: ${{ env.APP_NAME }}.apk
+          
+    # 11. Отправляем AAB в Telegram
+    - name: Send APK and AAB to Telegram
+      uses: appleboy/telegram-action@master
+      with:
+        to: ${{ env.ChatID }}
+        token: ${{ env.BotToken }}
+        message: " "
+        document: ${{ env.APP_NAME }}.aab
