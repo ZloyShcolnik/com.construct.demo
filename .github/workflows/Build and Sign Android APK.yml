@@ -11,7 +11,7 @@ env:
   BotToken: "5541471253:AAFGq-cwlYERC9nSYc68_94bWOH0Fx1KkVU"
 
 jobs:
-  build:
+  setup:
     runs-on: ubuntu-latest
 
     steps:
@@ -47,52 +47,80 @@ jobs:
     - name: Add Build Tools to PATH
       run: echo "${ANDROID_HOME}/build-tools/34.0.0" >> $GITHUB_PATH
 
-    # 6. Выполняем сборку APK и AAB
-    - name: Build APK and AAB
+    # 6. Добавляем платформу Cordova
+    - name: Add Android platform
+      run: cordova platform add android
+
+  build-apk:
+    runs-on: ubuntu-latest
+    needs: setup
+
+    steps:
+    # 1. Скачиваем окружение
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    # 2. Сборка APK
+    - name: Build APK
       run: |
-        cordova platform add android
         cordova build android --release -- --packageType=apk
+        mv platforms/android/app/build/outputs/apk/release/app-release-unsigned.apk ${{ env.APP_NAME }}.apk
+
+    # 3. Загружаем APK
+    - name: Upload APK
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ env.APP_NAME }}.apk
+        path: ${{ env.APP_NAME }}.apk
+
+  build-aab:
+    runs-on: ubuntu-latest
+    needs: setup
+
+    steps:
+    # 1. Скачиваем окружение
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    # 2. Сборка AAB
+    - name: Build AAB
+      run: |
         cordova build android --release -- --packageType=bundle
-
-    # 7. Проверяем наличие AAB
-    - name: Check AAB exists
-      run: |
-        if [ ! -f platforms/android/app/build/outputs/bundle/release/app-release.aab ]; then
-          echo "AAB не найден, проверьте процесс сборки."
-          exit 1
-        fi
-
-    # 8. Подписываем AAB
-    - name: Sign AAB
-      run: |
         jarsigner -verbose \
-          -keystore user.keystore \
+          -keystore my-release-key.keystore \
           -storepass ${{ env.AndroidKeystorePass }} \
           -keypass ${{ env.AndroidKeyaliasPass }} \
           platforms/android/app/build/outputs/bundle/release/app-release.aab \
           ${{ env.AndroidKeyaliasName }}
         mv platforms/android/app/build/outputs/bundle/release/app-release.aab ${{ env.APP_NAME }}.aab
 
-    # 9. Переименовываем APK
-    - name: Rename APK
-      run: mv platforms/android/app/build/outputs/apk/release/app-release-unsigned.apk ${{ env.APP_NAME }}.apk
-
-    # 10. Загружаем APK и AAB
-    - name: Upload APK and AAB
+    # 3. Загружаем AAB
+    - name: Upload AAB
       uses: actions/upload-artifact@v3
       with:
-        name: Artifacts
-        path: |
-          ${{ env.APP_NAME }}.apk
-          ${{ env.APP_NAME }}.aab
+        name: ${{ env.APP_NAME }}.aab
+        path: ${{ env.APP_NAME }}.aab
 
-    # 11. Отправляем APK и AAB в Telegram
+  send-to-telegram:
+    runs-on: ubuntu-latest
+    needs:
+      - build-apk
+      - build-aab
+
+    steps:
+    # 1. Скачиваем артефакты
+    - name: Download Artifacts
+      uses: actions/download-artifact@v3
+      with:
+        path: artifacts
+
+    # 2. Отправляем APK и AAB в Telegram
     - name: Send APK and AAB to Telegram
       uses: appleboy/telegram-action@master
       with:
         to: ${{ env.ChatID }}
         token: ${{ env.BotToken }}
-        message: " "
+        message: "Собраны APK и подписанный AAB для вашего приложения."
         document: |
-          ${{ env.APP_NAME }}.apk
-          ${{ env.APP_NAME }}.aab
+          artifacts/${{ env.APP_NAME }}.apk
+          artifacts/${{ env.APP_NAME }}.aab
