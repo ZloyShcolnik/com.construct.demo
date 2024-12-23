@@ -87,7 +87,7 @@ jobs:
       run: |
         cordova build android --release -- --packageType=bundle
         jarsigner -verbose \
-          -keystore my-release-key.keystore \
+          -keystore user.keystore \
           -storepass ${{ env.AndroidKeystorePass }} \
           -keypass ${{ env.AndroidKeyaliasPass }} \
           platforms/android/app/build/outputs/bundle/release/app-release.aab \

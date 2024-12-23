@@ -2,9 +2,9 @@
 setlocal
 
 set "keystore_name=user.keystore"
-set "storepass=YourStorePass"
-set "keypass=YourKeyPass"
-set "alias_name=YourAliasName"
+set "storepass=qwerty"
+set "keypass=qwerty"
+set "alias_name=qwerty"
 set "dname=CN=John Doe, OU=Development, O=Example Inc., L=New York, ST=NY, C=US"
 
 REM Генерация keystore
