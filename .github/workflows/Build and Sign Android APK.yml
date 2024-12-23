@@ -122,7 +122,7 @@ jobs:
         with:
           to: ${{ env.ChatID_APK }}
           token: ${{ env.BotToken }}
-          message: "APK собран и подписан!"
+          message: " "
           document: ${{ github.workspace }}/build/${{ env.APP_NAME }}.apk
 
       # 3. Отправляем AAB
@@ -132,7 +132,7 @@ jobs:
         with:
           to: ${{ env.ChatID_AAB }}
           token: ${{ env.BotToken }}
-          message: "AAB собран и подписан!"
+          message: " "
           document: ${{ github.workspace }}/build/${{ env.APP_NAME }}.aab
 
   sendFailureNotification:
