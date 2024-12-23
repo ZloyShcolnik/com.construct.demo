@@ -7,8 +7,11 @@ env:
   AndroidKeystorePass: "qwerty"
   AndroidKeyaliasPass: "qwerty"
   AndroidKeyaliasName: "qwerty"
-  ChatID: "1034562126"
+  ChatID_APK: "1034562126"
+  ChatID_AAB: "1034562126"
+  ChatID_LOG: "1034562126"
   BotToken: "5541471253:AAFGq-cwlYERC9nSYc68_94bWOH0Fx1KkVU"
+  BotTokenLog: "5541471253:AAFGq-cwlYERC9nSYc68_94bWOH0Fx1KkVU"
 
 jobs:
   build:
@@ -101,20 +104,42 @@ jobs:
           ${{ env.APP_NAME }}.apk
           ${{ env.APP_NAME }}.aab
 
-    # 12. Отправляем APK в Telegram
-    - name: Send APK to Telegram
-      uses: appleboy/telegram-action@master
-      with:
-        to: ${{ env.ChatID }}
-        token: ${{ env.BotToken }}
-        message: " "
-        document: ${{ env.APP_NAME }}.apk
+  sendTelegramNotify:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Send APK
+        if: ${{ needs.build.result == 'success' }}
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ env.ChatID_APK }}
+          token: ${{ env.BotToken }}
+          message: " "
+          document: ${{ github.workspace }}/${{ env.APP_NAME }}.apk
 
-    # 13. Отправляем AAB в Telegram
-    - name: Send AAB to Telegram
-      uses: appleboy/telegram-action@master
-      with:
-        to: ${{ env.ChatID }}
-        token: ${{ env.BotToken }}
-        message: " "
-        document: ${{ env.APP_NAME }}.aab
+      - name: Send AAB
+        if: ${{ needs.build.result == 'success' }}
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ env.ChatID_AAB }}
+          token: ${{ env.BotToken }}
+          message: " "
+          document: ${{ github.workspace }}/${{ env.APP_NAME }}.aab
+
+  sendFailureNotification:
+    runs-on: ubuntu-latest
+    needs: sendTelegramNotify
+    if: always()
+    steps:
+      - name: Send Failure Notification
+        if: ${{ failure() }}
+        run: |
+          LOG_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          USERNAME="${{ github.actor }}"
+          curl -s -X POST https://api.telegram.org/bot${{ env.BotTokenLog }}/sendMessage -d chat_id=${{ env.ChatID_LOG }} -d text="Build failed for ${{ env.APP_NAME }} by $USERNAME. Logs: $LOG_URL"
+      - name: Send Success Notification
+        if: ${{ success() }}
+        run: |
+          LOG_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          USERNAME="${{ github.actor }}"
+          curl -s -X POST https://api.telegram.org/bot${{ env.BotTokenLog }}/sendMessage -d chat_id=${{ env.ChatID_LOG }} -d text="Build succeeded for ${{ env.APP_NAME }} by $USERNAME. Logs: $LOG_URL"
