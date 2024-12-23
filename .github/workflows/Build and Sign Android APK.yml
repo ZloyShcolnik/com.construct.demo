@@ -108,23 +108,32 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
+      # 1. Скачиваем артефакты APK и AAB
+      - name: Download APK and AAB artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: Artifacts
+          path: ${{ github.workspace }}/build
+
+      # 2. Отправляем APK
       - name: Send APK
         if: ${{ needs.build.result == 'success' }}
         uses: appleboy/telegram-action@master
         with:
           to: ${{ env.ChatID_APK }}
           token: ${{ env.BotToken }}
-          message: " "
-          document: ${{ github.workspace }}/${{ env.APP_NAME }}.apk
+          message: "APK собран и подписан!"
+          document: ${{ github.workspace }}/build/${{ env.APP_NAME }}.apk
 
+      # 3. Отправляем AAB
       - name: Send AAB
         if: ${{ needs.build.result == 'success' }}
         uses: appleboy/telegram-action@master
         with:
           to: ${{ env.ChatID_AAB }}
           token: ${{ env.BotToken }}
-          message: " "
-          document: ${{ github.workspace }}/${{ env.APP_NAME }}.aab
+          message: "AAB собран и подписан!"
+          document: ${{ github.workspace }}/build/${{ env.APP_NAME }}.aab
 
   sendFailureNotification:
     runs-on: ubuntu-latest
