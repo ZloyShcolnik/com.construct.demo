@@ -1,4 +1,4 @@
-name: Build and Sign Android APK
+name: Build Android APK and AAB
 
 on: push
 
@@ -47,71 +47,52 @@ jobs:
     - name: Add Build Tools to PATH
       run: echo "${ANDROID_HOME}/build-tools/34.0.0" >> $GITHUB_PATH
 
-    # 6. Отключаем Splash Screen
-    - name: Disable Splash Screen
-      run: |
-        sed -i 's/<preference name="SplashScreen".*/<preference name="SplashScreen" value="none" \/>/' config.xml || echo '<preference name="SplashScreen" value="none" />' >> config.xml
-        sed -i 's/<preference name="SplashScreenDelay".*/<preference name="SplashScreenDelay" value="0" \/>/' config.xml || echo '<preference name="SplashScreenDelay" value="0" />' >> config.xml
-        sed -i 's/<preference name="AutoHideSplashScreen".*/<preference name="AutoHideSplashScreen" value="true" \/>/' config.xml || echo '<preference name="AutoHideSplashScreen" value="true" />' >> config.xml
-
-    # 7. Выполняем сборку APK
-    - name: Build APK
+    # 6. Выполняем сборку APK и AAB
+    - name: Build APK and AAB
       run: |
         cordova platform add android
         cordova build android --release -- --packageType=apk
+        cordova build android --release -- --packageType=bundle
 
-    # 8. Проверяем наличие APK
-    - name: Check APK exists
+    # 7. Проверяем наличие AAB
+    - name: Check AAB exists
       run: |
-        if [ -f platforms/android/app/build/outputs/apk/release/app-release-unsigned.apk ]; then
-          echo "APK найден, продолжаем подписывать."
-        else
-          echo "APK не найден, проверьте процесс сборки."
+        if [ ! -f platforms/android/app/build/outputs/bundle/release/app-release.aab ]; then
+          echo "AAB не найден, проверьте процесс сборки."
           exit 1
         fi
 
-    # 9. Создаем keystore
-    - name: Generate keystore
-      run: |
-        keytool -genkey -v \
-          -keystore my-release-key.keystore \
-          -storepass ${{ env.AndroidKeystorePass }} \
-          -keypass ${{ env.AndroidKeyaliasPass }} \
-          -alias ${{ env.AndroidKeyaliasName }} \
-          -keyalg RSA \
-          -keysize 2048 \
-          -validity 10000 \
-          -dname "CN=John Doe, OU=Development, O=Example Inc., L=New York, ST=NY, C=US"
-
-    # 10. Подписываем APK
-    - name: Sign APK
+    # 8. Подписываем AAB
+    - name: Sign AAB
       run: |
         jarsigner -verbose \
-          -keystore my-release-key.keystore \
-          -storepass qwerty \
-          -keypass qwerty \
-          platforms/android/app/build/outputs/apk/release/app-release-unsigned.apk \
-          qwerty
+          -keystore user.keystore \
+          -storepass ${{ env.AndroidKeystorePass }} \
+          -keypass ${{ env.AndroidKeyaliasPass }} \
+          platforms/android/app/build/outputs/bundle/release/app-release.aab \
+          ${{ env.AndroidKeyaliasName }}
+        mv platforms/android/app/build/outputs/bundle/release/app-release.aab ${{ env.APP_NAME }}.aab
 
-    # 11. Выравниваем APK
-    - name: Align APK
-      run: |
-        zipalign -v 4 \
-          platforms/android/app/build/outputs/apk/release/app-release-unsigned.apk \
-          ${{ env.APP_NAME }}.apk
+    # 9. Переименовываем APK
+    - name: Rename APK
+      run: mv platforms/android/app/build/outputs/apk/release/app-release-unsigned.apk ${{ env.APP_NAME }}.apk
 
-    # 12. Загружаем подписанный APK
-    - name: Upload APK
+    # 10. Загружаем APK и AAB
+    - name: Upload APK and AAB
       uses: actions/upload-artifact@v3
       with:
-        name: ${{ env.APP_NAME }}.apk
-        path: ${{ env.APP_NAME }}.apk
+        name: Artifacts
+        path: |
+          ${{ env.APP_NAME }}.apk
+          ${{ env.APP_NAME }}.aab
 
-    # 13. Отправляем APK в Telegram
-    - name: Send APK to Telegram
+    # 11. Отправляем APK и AAB в Telegram
+    - name: Send APK and AAB to Telegram
       uses: appleboy/telegram-action@master
       with:
         to: ${{ env.ChatID }}
         token: ${{ env.BotToken }}
         message: " "
-        document: '${{ env.APP_NAME }}.apk'
+        document: |
+          ${{ env.APP_NAME }}.apk
+          ${{ env.APP_NAME }}.aab
