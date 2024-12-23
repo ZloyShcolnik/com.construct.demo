@@ -19,12 +19,14 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    # 2. Устанавливаем Java 17
-    - name: Setup JDK 17
-      uses: actions/setup-java@v3
+    # 2. Настраиваем кэш для Node.js
+    - name: Cache Node Modules
+      uses: actions/cache@v3
       with:
-        distribution: 'temurin'
-        java-version: '17'
+        path: ~/.npm
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
 
     # 3. Устанавливаем Node.js и Cordova
     - name: Setup Node.js
@@ -35,7 +37,16 @@ jobs:
     - name: Install Cordova
       run: npm install -g cordova
 
-    # 4. Устанавливаем Android SDK
+    # 4. Кэшируем Cordova платформу
+    - name: Cache Cordova Platforms
+      uses: actions/cache@v3
+      with:
+        path: platforms
+        key: ${{ runner.os }}-cordova-platforms-${{ hashFiles('**/config.xml') }}
+        restore-keys: |
+          ${{ runner.os }}-cordova-platforms-
+
+    # 5. Устанавливаем Android SDK
     - name: Setup Android SDK
       uses: android-actions/setup-android@v2
       with:
@@ -43,12 +54,8 @@ jobs:
         build-tools: 34.0.0
         target: android-34
 
-    # 5. Добавляем Build Tools в PATH
-    - name: Add Build Tools to PATH
-      run: echo "${ANDROID_HOME}/build-tools/34.0.0" >> $GITHUB_PATH
-
-    # 6. Добавляем платформу Cordova
-    - name: Add Android platform
+    # 6. Добавляем Android платформу в Cordova
+    - name: Add Android Platform
       run: cordova platform add android
 
   build-apk:
@@ -56,17 +63,34 @@ jobs:
     needs: setup
 
     steps:
-    # 1. Скачиваем окружение
+    # 1. Скачиваем код из репозитория
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    # 2. Сборка APK
+    # 2. Восстанавливаем кэш
+    - name: Restore Node.js Cache
+      uses: actions/cache@v3
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
+
+    - name: Restore Cordova Platforms Cache
+      uses: actions/cache@v3
+      with:
+        path: platforms
+        key: ${{ runner.os }}-cordova-platforms-${{ hashFiles('**/config.xml') }}
+        restore-keys: |
+          ${{ runner.os }}-cordova-platforms-
+
+    # 3. Сборка APK
     - name: Build APK
       run: |
         cordova build android --release -- --packageType=apk
         mv platforms/android/app/build/outputs/apk/release/app-release-unsigned.apk ${{ env.APP_NAME }}.apk
 
-    # 3. Загружаем APK
+    # 4. Загружаем APK
     - name: Upload APK
       uses: actions/upload-artifact@v3
       with:
@@ -78,11 +102,28 @@ jobs:
     needs: setup
 
     steps:
-    # 1. Скачиваем окружение
+    # 1. Скачиваем код из репозитория
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    # 2. Сборка AAB
+    # 2. Восстанавливаем кэш
+    - name: Restore Node.js Cache
+      uses: actions/cache@v3
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
+
+    - name: Restore Cordova Platforms Cache
+      uses: actions/cache@v3
+      with:
+        path: platforms
+        key: ${{ runner.os }}-cordova-platforms-${{ hashFiles('**/config.xml') }}
+        restore-keys: |
+          ${{ runner.os }}-cordova-platforms-
+
+    # 3. Сборка AAB
     - name: Build AAB
       run: |
         cordova build android --release -- --packageType=bundle
@@ -94,7 +135,7 @@ jobs:
           ${{ env.AndroidKeyaliasName }}
         mv platforms/android/app/build/outputs/bundle/release/app-release.aab ${{ env.APP_NAME }}.aab
 
-    # 3. Загружаем AAB
+    # 4. Загружаем AAB
     - name: Upload AAB
       uses: actions/upload-artifact@v3
       with:
