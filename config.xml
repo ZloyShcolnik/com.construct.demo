@@ -22,7 +22,7 @@
 	<preference name="android-minSdkVersion" value="21" />
 	<access origin="*" />
 	
-	<preference name="OverrideUserAgent" value="Mozilla/5.0 (Linux; Android 11; Pixel 5 Build/RQ3A.210805.001; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/91.0.4472.120 Mobile Safari/537.36" />
+	<preference name="AppendUserAgent" value="Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36" />
 
 	<plugin name="cordova-custom-config" />
 	<plugin name="cordova-plugin-file" />
