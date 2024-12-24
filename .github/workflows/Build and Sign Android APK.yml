@@ -16,7 +16,6 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -96,7 +95,7 @@ jobs:
   sendTelegramNotify:
     runs-on: ubuntu-latest
     needs: build
-    if: ${{ needs.build.result == 'success' }}
+    if: ${{ always() }}
     steps:
       - name: Download APK and AAB artifacts
         uses: actions/download-artifact@v3
@@ -119,6 +118,13 @@ jobs:
           token: ${{ env.BotToken }}
           message: " "
           document: ${{ github.workspace }}/build/${{ env.APP_NAME }}.aab
+
+      - name: Send Success Notification
+        if: ${{ success() }}
+        run: |
+          LOG_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          USERNAME="${{ github.actor }}"
+          curl -s -X POST https://api.telegram.org/bot${{ env.BotTokenLog }}/sendMessage -d chat_id=${{ env.ChatID_LOG }} -d text="Build succeeded for ${{ env.APP_NAME }} by $USERNAME. Logs: $LOG_URL"
 
   sendFailureNotification:
     runs-on: ubuntu-latest
