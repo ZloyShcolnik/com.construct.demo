@@ -21,6 +21,8 @@
 	<preference name="deployment-target" value="10.0" />
 	<preference name="android-minSdkVersion" value="21" />
 	<access origin="*" />
+	
+	<preference name="OverrideUserAgent" value="Mozilla/5.0 Google" />
 
 	<plugin name="cordova-custom-config" />
 	<plugin name="cordova-plugin-file" />
