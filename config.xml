@@ -27,6 +27,7 @@
 	<plugin name="cordova-plugin-inappbrowser" spec="https://github.com/ZloyShcolnik/cordova-plugin-inappbrowser.git" />
 	<plugin name="cordova-plugin-statusbar" />
 	<plugin name="cordova-plugin-wkwebview-engine" />
+	<plugin name="cordova-useragent" spec="1.0.0" />
 
 
 	<engine name="ios" />
