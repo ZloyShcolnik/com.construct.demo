@@ -42,11 +42,6 @@ jobs:
           build-tools: 34.0.0
           target: android-34
 
-      - name: Modify InAppBrowserDialog.java
-        run: |
-          sed -i 's|public void onBackPressed() {|public void onBackPressed() {\n    if (this.inAppBrowser == null) {\n        this.dismiss();\n    } else {\n        if (this.inAppBrowser.hardwareBack() && this.inAppBrowser.canGoBack()) {\n            this.inAppBrowser.goBack();\n        } else {\n            // Prevent dialog from closing\n        }\n    }|g' \
-          platforms/android/app/src/main/java/org/apache/cordova/inappbrowser/InAppBrowserDialog.java
-
       - name: Add Build Tools to PATH
         run: echo "${ANDROID_HOME}/build-tools/34.0.0" >> $GITHUB_PATH
 
