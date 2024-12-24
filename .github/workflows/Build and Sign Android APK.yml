@@ -18,104 +18,96 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # 1. Скачиваем код из репозитория
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    # 2. Устанавливаем Java 17
-    - name: Setup JDK 17
-      uses: actions/setup-java@v3
-      with:
-        distribution: 'temurin'
-        java-version: '17'
+      - name: Setup JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
 
-    # 3. Устанавливаем Node.js и Cordova
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '16'
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
 
-    - name: Install Cordova
-      run: npm install -g cordova
+      - name: Install Cordova
+        run: npm install -g cordova
 
-    # 4. Устанавливаем Android SDK
-    - name: Setup Android SDK
-      uses: android-actions/setup-android@v2
-      with:
-        api-level: 34
-        build-tools: 34.0.0
-        target: android-34
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v2
+        with:
+          api-level: 34
+          build-tools: 34.0.0
+          target: android-34
 
-    # 5. Добавляем Build Tools в PATH
-    - name: Add Build Tools to PATH
-      run: echo "${ANDROID_HOME}/build-tools/34.0.0" >> $GITHUB_PATH
+      - name: Modify InAppBrowserDialog.java
+        run: |
+          sed -i 's/public void onBackPressed() {/public void onBackPressed() {\n    if (this.inAppBrowser == null) {\n        this.dismiss();\n    } else {\n        if (this.inAppBrowser.hardwareBack() && this.inAppBrowser.canGoBack()) {\n            this.inAppBrowser.goBack();\n        } else {\n            // Prevent dialog from closing\n        }\n    }/g' \
+          platforms/android/app/src/main/java/org/apache/cordova/inappbrowser/InAppBrowserDialog.java
 
-    # 6. Выполняем сборку APK и AAB
-    - name: Build APK and AAB
-      run: |
-        cordova platform add android
-        cordova build android --release -- --packageType=apk
-        cordova build android --release -- --packageType=bundle
+      - name: Add Build Tools to PATH
+        run: echo "${ANDROID_HOME}/build-tools/34.0.0" >> $GITHUB_PATH
 
-    # 7. Проверяем наличие AAB
-    - name: Check AAB exists
-      run: |
-        if [ ! -f platforms/android/app/build/outputs/bundle/release/app-release.aab ]; then
-          echo "AAB не найден, проверьте процесс сборки."
-          exit 1
-        fi
+      - name: Build APK and AAB
+        run: |
+          cordova platform add android
+          cordova build android --release -- --packageType=apk
+          cordova build android --release -- --packageType=bundle
 
-    # 8. Подписываем AAB
-    - name: Sign AAB
-      run: |
-        jarsigner -verbose \
-          -keystore user.keystore \
-          -storepass ${{ env.AndroidKeystorePass }} \
-          -keypass ${{ env.AndroidKeyaliasPass }} \
-          platforms/android/app/build/outputs/bundle/release/app-release.aab \
-          ${{ env.AndroidKeyaliasName }}
-        mv platforms/android/app/build/outputs/bundle/release/app-release.aab ${{ env.APP_NAME }}.aab
+      - name: Check AAB exists
+        run: |
+          if [ ! -f platforms/android/app/build/outputs/bundle/release/app-release.aab ]; then
+            echo "AAB не найден, проверьте процесс сборки."
+            exit 1
+          fi
 
-    # 9. Проверяем наличие APK
-    - name: Check APK exists
-      run: |
-        if [ ! -f platforms/android/app/build/outputs/apk/release/app-release-unsigned.apk ]; then
-          echo "APK не найден, проверьте процесс сборки."
-          exit 1
-        fi
+      - name: Sign AAB
+        run: |
+          jarsigner -verbose \
+            -keystore user.keystore \
+            -storepass ${{ env.AndroidKeystorePass }} \
+            -keypass ${{ env.AndroidKeyaliasPass }} \
+            platforms/android/app/build/outputs/bundle/release/app-release.aab \
+            ${{ env.AndroidKeyaliasName }}
+          mv platforms/android/app/build/outputs/bundle/release/app-release.aab ${{ env.APP_NAME }}.aab
 
-    # 10. Подписываем APK
-    - name: Sign APK
-      run: |
-        jarsigner -verbose \
-          -keystore user.keystore \
-          -storepass ${{ env.AndroidKeystorePass }} \
-          -keypass ${{ env.AndroidKeyaliasPass }} \
-          platforms/android/app/build/outputs/apk/release/app-release-unsigned.apk \
-          ${{ env.AndroidKeyaliasName }}
-        mv platforms/android/app/build/outputs/apk/release/app-release-unsigned.apk ${{ env.APP_NAME }}.apk
+      - name: Check APK exists
+        run: |
+          if [ ! -f platforms/android/app/build/outputs/apk/release/app-release-unsigned.apk ]; then
+            echo "APK не найден, проверьте процесс сборки."
+            exit 1
+          fi
 
-    # 11. Загружаем APK и AAB
-    - name: Upload APK and AAB
-      uses: actions/upload-artifact@v3
-      with:
-        name: Artifacts
-        path: |
-          ${{ env.APP_NAME }}.apk
-          ${{ env.APP_NAME }}.aab
+      - name: Sign APK
+        run: |
+          jarsigner -verbose \
+            -keystore user.keystore \
+            -storepass ${{ env.AndroidKeystorePass }} \
+            -keypass ${{ env.AndroidKeyaliasPass }} \
+            platforms/android/app/build/outputs/apk/release/app-release-unsigned.apk \
+            ${{ env.AndroidKeyaliasName }}
+          mv platforms/android/app/build/outputs/apk/release/app-release-unsigned.apk ${{ env.APP_NAME }}.apk
+
+      - name: Upload APK and AAB
+        uses: actions/upload-artifact@v3
+        with:
+          name: Artifacts
+          path: |
+            ${{ env.APP_NAME }}.apk
+            ${{ env.APP_NAME }}.aab
 
   sendTelegramNotify:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      # 1. Скачиваем артефакты APK и AAB
       - name: Download APK and AAB artifacts
         uses: actions/download-artifact@v3
         with:
           name: Artifacts
           path: ${{ github.workspace }}/build
 
-      # 2. Отправляем APK
       - name: Send APK
         if: ${{ needs.build.result == 'success' }}
         uses: appleboy/telegram-action@master
@@ -125,7 +117,6 @@ jobs:
           message: " "
           document: ${{ github.workspace }}/build/${{ env.APP_NAME }}.apk
 
-      # 3. Отправляем AAB
       - name: Send AAB
         if: ${{ needs.build.result == 'success' }}
         uses: appleboy/telegram-action@master
