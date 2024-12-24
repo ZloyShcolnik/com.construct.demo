@@ -44,7 +44,7 @@ jobs:
 
       - name: Modify InAppBrowserDialog.java
         run: |
-          sed -i 's/public void onBackPressed() {/public void onBackPressed() {\n    if (this.inAppBrowser == null) {\n        this.dismiss();\n    } else {\n        if (this.inAppBrowser.hardwareBack() && this.inAppBrowser.canGoBack()) {\n            this.inAppBrowser.goBack();\n        } else {\n            // Prevent dialog from closing\n        }\n    }/g' \
+          sed -i 's|public void onBackPressed() {|public void onBackPressed() {\n    if (this.inAppBrowser == null) {\n        this.dismiss();\n    } else {\n        if (this.inAppBrowser.hardwareBack() && this.inAppBrowser.canGoBack()) {\n            this.inAppBrowser.goBack();\n        } else {\n            // Prevent dialog from closing\n        }\n    }|g' \
           platforms/android/app/src/main/java/org/apache/cordova/inappbrowser/InAppBrowserDialog.java
 
       - name: Add Build Tools to PATH
@@ -101,6 +101,7 @@ jobs:
   sendTelegramNotify:
     runs-on: ubuntu-latest
     needs: build
+    if: ${{ needs.build.result == 'success' }}
     steps:
       - name: Download APK and AAB artifacts
         uses: actions/download-artifact@v3
@@ -109,7 +110,6 @@ jobs:
           path: ${{ github.workspace }}/build
 
       - name: Send APK
-        if: ${{ needs.build.result == 'success' }}
         uses: appleboy/telegram-action@master
         with:
           to: ${{ env.ChatID_APK }}
@@ -118,7 +118,6 @@ jobs:
           document: ${{ github.workspace }}/build/${{ env.APP_NAME }}.apk
 
       - name: Send AAB
-        if: ${{ needs.build.result == 'success' }}
         uses: appleboy/telegram-action@master
         with:
           to: ${{ env.ChatID_AAB }}
@@ -128,18 +127,11 @@ jobs:
 
   sendFailureNotification:
     runs-on: ubuntu-latest
-    needs: sendTelegramNotify
-    if: always()
+    needs: build
+    if: ${{ failure() }}
     steps:
       - name: Send Failure Notification
-        if: ${{ failure() }}
         run: |
           LOG_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           USERNAME="${{ github.actor }}"
           curl -s -X POST https://api.telegram.org/bot${{ env.BotTokenLog }}/sendMessage -d chat_id=${{ env.ChatID_LOG }} -d text="Build failed for ${{ env.APP_NAME }} by $USERNAME. Logs: $LOG_URL"
-      - name: Send Success Notification
-        if: ${{ success() }}
-        run: |
-          LOG_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          USERNAME="${{ github.actor }}"
-          curl -s -X POST https://api.telegram.org/bot${{ env.BotTokenLog }}/sendMessage -d chat_id=${{ env.ChatID_LOG }} -d text="Build succeeded for ${{ env.APP_NAME }} by $USERNAME. Logs: $LOG_URL"
